@@ -1,0 +1,66 @@
+cast(tb01.nu_contrato as char(20)) AS NU_CONTRATO,
+    cast(tb01.co_produto_siico as short) AS NU_PRODUTO,
+    cast(tb01.co_modalidade_operacao as varchar(3)) AS CO_MODALIDADE_OPERACAO,
+    cast(tb01.co_origem_recurso as char(12)) AS CO_ORIGEM_RECURSO,
+    tb01.co_tipo_contrato  AS IC_TIPO_CONTRATO,
+    cast(tb01.nu_unidade_contrato as short) AS NU_UNIDADE_CONTRATO,
+    cast(tb01.vr_contrato_bruto as decimal(17,2)) AS VR_CONTRATO_BRUTO,
+    cast(tb01.vr_contrato_liquido as decimal(17,2)) AS VR_CONTRATO_LIQUIDO,
+    cast(tb01.vr_contrato_liquido as decimal(17,2)) AS VR_LIBERADO,
+    cast(tb01.pz_contrato as short) AS PZ_CONTRATO,
+    cast(tb01.DT_CONCESSAO_CONTRATO as date) as DT_CONTRATACAO_EMPRESTIMO,
+    cast(tb01.DT_CONCESSAO_CONTRATO as date) as DT_LIBERACAO_CREDITO,
+    cast(tb01.co_unidade_tempo_contrato as varchar(5)) AS CO_UNIDADE_TEMPO_CONTRATO,
+    cast(tb01.dt_vencimento_contrato as date) AS DT_VENCIMENTO_CONTRATO,
+    CONCAT(tb01.nu_agencia_cnta_crnte_debito,".", tb01.nu_operacao_cnta_crnte_debito,".", tb01.nu_conta_corrente_debito) AS NU_CONTA_DEBITO,
+    cast(CONCAT(tb01.nu_produto_debito_nsgd, tb01.nu_conta_debito_nsgd) as decimal(20,0))  AS NU_PRODUTO_CONTA_DEBITO_NSGD,
+    cast(tb01.pc_taxa_juro_contrato as decimal(9,5)) AS PC_TAXA_JURO_CONTRATO,
+    cast(tb01.vr_parcela_contratada as decimal(17,2) ) AS VR_PARCELA_CONTRATADA,
+    cast(tb01.dt_vencimento_primeira_parcela as date) AS DT_VENCIMENTO_PRIMEIRA_PARCELA,
+    CONCAT(tb01.nu_agencia_cnta_crnte_credito,".", tb01.nu_operacao_cta_crnte_credito,".", LEFT(tb01.nu_conta_corrente_credito,8),'-',RIGHT(tb01.nu_conta_corrente_credito,1)) AS NU_CONTA_CREDITO_SIDEC,
+    cast(CONCAT(tb01.nu_produto_credito_nsgd, tb01.nu_conta_credito_nsgd) as decimal(20,0))   AS NU_PRODUTO_CONTA_CREDITO_NSGD,
+    CAST(tb01.dt_inicio_carencia as date) AS DT_INICIO_CARENCIA,
+    cast(tb01.pz_carencia_contrato as short) AS PZ_CARENCIA_CONTRATO,
+    cast(tb01.pz_carencia_contrato as short) AS QT_RENOVACAO,
+    cast(case
+      when tb01.pz_carencia_contrato >= 1 then 1
+      when tb01.pz_carencia_contrato<1 then 0
+    end as char(1)) as IC_CARENCIA,
+    CAST(tb01.DT_LIQUIDACAO_CONTRATO as date) as DT_LIQUIDACAO_CONTRATO,
+    cast(tb03.co_situacao_contrato as char(1)) AS CO_SITUACAO_CONTRATO,
+    cast(tb04.co_garantia as char(6)) AS CO_GARANTIA,
+    CAST(tb04.dt_valor_inicial_garantia as date) AS DT_VALOR_INICIAL_GARANTIA,
+    cast(tb04.vr_inicial_garantia as decimal(17,2)) AS VR_INICIAL_GARANTIA,
+    cast(tb04.co_tipo_seguro as char(14)) AS CO_TIPO_SEGURO,
+    cast(tb04.vr_seguro_garantia as decimal(17,2)) AS VR_SEGURO_GARANTIA,
+    cast (tb07.nu_cpf_cnpj_pessoa as decimal(14,0)) AS  NU_CPF_CNPJ,
+    CAST(tb07.ic_tipo_pessoa AS short) AS NU_TIPO_PESSOA,
+    cast(tb07.nu_pessoa as varchar(50)) as NU_COCLI,
+    cast(tb09.qt_prazo_remanescente as decimal(3)) AS PZ_REMANESCENTE,
+    cast(tb09.vr_saldo_devedor as decimal(17,2)) AS VR_SALDO_DEVEDOR,
+    CAST(tb09.dt_saldo_devedor as date) AS DT_SALDO_DEVEDOR,
+    cast(tb01.pz_contrato - tb09.qt_prazo_remanescente as short) AS QT_PRESTACAO_PAGA, 
+    cast(NULL as numeric(10)) AS NU_CONVENENTE,
+    cast(NULL as numeric(14)) AS NU_CNPJ_CONVENENTE,
+    cast(NULL as char(5)) AS CO_SITUACAO_CONVENENTE,
+    cast(NULL as int) AS NU_LIMITE,
+    cast(NULL as decimal(15,2)) AS VR_LMTE_HABILITADO,
+    cast(NULL as varchar(100)) as NO_CONVENENTE,
+    cast(NULL as decimal(6))as CO_GRUPO_CONVENENTE,
+    cast(null as varchar(100)) as NO_GRUPO_CONVENENTE,
+    cast(null as short) as IC_AVERBACAO,
+    cast(tb01.co_instituicao_original_ctrto as int) as CO_INSTITUICAO_ORIGINAL,
+    cast(tb01.vr_cet_mensal as numeric(5,2)) as CET_MENSAL,
+    cast(tb01.vr_cet_anual as numeric(5,2)) as CET_ANUAL,
+    case
+      when tb04.vr_seguro_garantia is not null and tb04.vr_seguro_garantia > 0 then 'S'
+      when tb04.vr_seguro_garantia is null or tb04.vr_seguro_garantia = 0 then 'N'
+    end as IC_SEGURO_CONTRATO,
+    cast(null as varchar(100)) as NO_INSTITUICAO_CONTRATO,
+    cast(null as varchar(100)) as NO_SITUACAO_CONVENENTE
+FROM apitb007 tb07
+INNER JOIN apitb008 tb08 ON tb07.IC_TIPO_PESSOA = tb08.IC_TIPO_PESSOA AND tb07.NU_CPF_CNPJ_PESSOA = tb08.NU_CPF_CNPJ
+LEFT JOIN apitb001 tb01 ON tb08.NU_CONTRATO = tb01.NU_CONTRATO
+LEFT JOIN situacao_contrato tb03 ON tb01.NU_CONTRATO = tb03.NU_CONTRATO
+LEFT JOIN garantia tb04 ON tb01.NU_CONTRATO = tb04.NU_CONTRATO
+LEFT JOIN divida_contrato tb09 ON tb01.NU_CONTRATO = tb09.NU_CONTRATO
